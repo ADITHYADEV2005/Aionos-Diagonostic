@@ -1,0 +1,17 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "pythonVersion": "3.10",
+  "pythonPlatform": "Windows",
+  "include": [
+    "ai_server.py",
+    "reconstruction_module"
+  ],
+  "exclude": [
+    ".venv",
+    "frontend",
+    "**/__pycache__"
+  ],
+  "reportMissingModuleSource": "none",
+  "typeCheckingMode": "basic"
+}

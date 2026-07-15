@@ -48,10 +48,32 @@ const SummaryDisplay = ({ summaryData }) => {
                 </CardHeader>
                 <CardContent>
                     <p className="text-gray-900 leading-relaxed">
-                        **{summary.interpretation}**
+                        {summary.interpretation}
                     </p>
                 </CardContent>
             </Card>
+
+            {/* Treatment Recommendation Card */}
+            {summary.treatment_recommendation && (
+                <Card className={`shadow-inner border-l-4 ${
+                    summary.treatment_required
+                        ? "border-red-600 bg-red-50"
+                        : "border-green-600 bg-green-50"
+                }`}>
+                    <CardHeader className="py-2">
+                        <CardTitle className={`text-lg ${
+                            summary.treatment_required ? "text-red-800" : "text-green-800"
+                        }`}>
+                            {summary.treatment_required ? " Urgent Treatment Required" : " Recommended Action"}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-gray-950 font-bold leading-relaxed">
+                            {summary.treatment_recommendation}
+                        </p>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 };
@@ -84,7 +106,7 @@ export default function AIPipelinePage() {
         setLoading(true);
         setError(null);
 
-        const BACKEND_URL = "http://localhost:5000/api/patient/add";
+        const BACKEND_URL = "http://localhost:8000/api/patient/add";
 
         try {
             const fd = new FormData();
@@ -233,14 +255,13 @@ export default function AIPipelinePage() {
                                 ))}
                             </div>
 
-                            {/* Action Buttons (Unchanged) */}
-                            <div className="flex gap-4 mt-6 justify-end">
+                            {/* Action Buttons */}
+                            <div className="flex gap-4 mt-6 justify-end flex-wrap">
                                 <Button
                                     onClick={() =>
                                         navigate("/final-report", {
                                             state: {
-                                                // Assuming the final report page will parse the string back to JSON
-                                                summary: result.summary, 
+                                                summary: result.summary,
                                                 images: result,
                                                 patientName,
                                                 patientId,
@@ -251,6 +272,28 @@ export default function AIPipelinePage() {
                                     className="bg-green-600 hover:bg-green-700"
                                 >
                                     Go to Final Report
+                                </Button>
+
+                                <Button
+                                    onClick={() =>
+                                        navigate("/view-3d", {
+                                            state: { patientName, patientId, organ, summary: result.summary },
+                                        })
+                                    }
+                                    className="bg-blue-600 hover:bg-blue-700"
+                                >
+                                     View 3D Model
+                                </Button>
+
+                                <Button
+                                    onClick={() =>
+                                        navigate("/view-4d", {
+                                            state: { patientName, patientId, organ, summary: result.summary },
+                                        })
+                                    }
+                                    style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none" }}
+                                >
+                                     View 4D (Animated)
                                 </Button>
 
                                 <Button variant="outline" onClick={callProcess}>

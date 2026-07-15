@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
-  const [recentPatients, setRecentPatients] = useState([]);
+  const [recentPatients, setRecentPatients] = useState<any[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
@@ -15,9 +15,19 @@ const Dashboard: React.FC = () => {
       navigate("/LoggedIn");
     }
 
-    fetch("http://localhost:5000/api/patient/recent")
+    fetch("http://localhost:8000/api/patient/recent")
       .then((response) => response.json())
-      .then((data) => setRecentPatients(data))
+      .then((data) => {
+        // Deduplicate by patientId – keep only the most recent entry per patient
+        const seen = new Set<string>();
+        const unique = (Array.isArray(data) ? data : []).filter((p: any) => {
+          const key = p.patientId || p.patientName || p._id;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        setRecentPatients(unique);
+      })
       .catch((error) => {
         console.error("Failed to load recent patients:", error);
       });
@@ -189,7 +199,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions — only New Scan & Upload File */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
@@ -214,10 +224,19 @@ const Dashboard: React.FC = () => {
             e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
             e.currentTarget.style.transform = 'translateY(0)';
           }}
+          onClick={() => navigate('/device-connect')}
           >
             <div style={{
-              fontSize: '32px',
-              marginBottom: '12px'
+              width: '56px',
+              height: '56px',
+              borderRadius: '16px',
+              background: 'linear-gradient(135deg, #FF7B6B 0%, #FF9A84 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '28px',
+              color: 'white',
+              margin: '0 auto 12px auto'
             }}>
               +
             </div>
@@ -259,10 +278,18 @@ const Dashboard: React.FC = () => {
           onClick={() => document.getElementById('fileInput')?.click()}
           >
             <div style={{
-              fontSize: '32px',
-              marginBottom: '12px'
+              width: '56px',
+              height: '56px',
+              borderRadius: '16px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '24px',
+              color: 'white',
+              margin: '0 auto 12px auto'
             }}>
-              ^
+              ↑
             </div>
             <h3 style={{
               fontSize: '14px',
@@ -277,93 +304,7 @@ const Dashboard: React.FC = () => {
               color: '#666666',
               margin: '0'
             }}>
-              Import files
-            </p>
-          </div>
-
-          {/* Patients Card */}
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '24px 16px',
-            textAlign: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-            cursor: 'pointer',
-            transition: 'all 0.2s'
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.boxShadow = '0 4px 16px rgba(255,123,107,0.15)';
-            e.currentTarget.style.transform = 'translateY(-2px)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
-          onClick={() => navigate('/patients')}
-          >
-            <div style={{
-              fontSize: '32px',
-              marginBottom: '12px'
-            }}>
-              P
-            </div>
-            <h3 style={{
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#2d3436',
-              margin: '0 0 8px 0'
-            }}>
-              Patients
-            </h3>
-            <p style={{
-              fontSize: '12px',
-              color: '#666666',
-              margin: '0'
-            }}>
-              Patient list
-            </p>
-          </div>
-
-          {/* History Card */}
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '24px 16px',
-            textAlign: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-            cursor: 'pointer',
-            transition: 'all 0.2s'
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.boxShadow = '0 4px 16px rgba(255,123,107,0.15)';
-            e.currentTarget.style.transform = 'translateY(-2px)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
-          onClick={() => navigate('/history')}
-          >
-            <div style={{
-              fontSize: '32px',
-              marginBottom: '12px'
-            }}>
-              H
-            </div>
-            <h3 style={{
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#2d3436',
-              margin: '0 0 8px 0'
-            }}>
-              History
-            </h3>
-            <p style={{
-              fontSize: '12px',
-              color: '#666666',
-              margin: '0'
-            }}>
-              Scan history
+              Import scan files
             </p>
           </div>
         </div>
@@ -403,7 +344,7 @@ const Dashboard: React.FC = () => {
             }}>
               {recentPatients.map((patient: any, index: number) => (
                 <div
-                  key={index}
+                  key={patient._id || index}
                   style={{
                     padding: '12px 16px',
                     borderBottom: index < recentPatients.length - 1 ? '1px solid #f0f0f0' : 'none',
@@ -419,6 +360,7 @@ const Dashboard: React.FC = () => {
                   onMouseOut={(e) => {
                     e.currentTarget.style.backgroundColor = 'transparent';
                   }}
+                  onClick={() => navigate(`/patient/${patient.patientId}`)}
                 >
                   <div style={{
                     width: '40px',
@@ -483,26 +425,10 @@ const Dashboard: React.FC = () => {
           gridTemplateColumns: 'repeat(4, 1fr)',
           height: '64px'
         }}>
-          <NavButton
-            label="Home"
-            isActive={true}
-            onClick={() => navigate('/dashboard')}
-          />
-          <NavButton
-            label="Patients"
-            isActive={false}
-            onClick={() => navigate('/patients')}
-          />
-          <NavButton
-            label="History"
-            isActive={false}
-            onClick={() => navigate('/history')}
-          />
-          <NavButton
-            label="Settings"
-            isActive={false}
-            onClick={() => navigate('/settings')}
-          />
+          <NavButton label="Home"     isActive={true}  onClick={() => navigate('/dashboard')} />
+          <NavButton label="Patients" isActive={false} onClick={() => navigate('/patients')}  />
+          <NavButton label="History"  isActive={false} onClick={() => navigate('/history')}   />
+          <NavButton label="Settings" isActive={false} onClick={() => navigate('/settings')}  />
         </div>
       </div>
 

@@ -7,7 +7,7 @@ const Patients = () => {
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/patient/all")
+    fetch("http://localhost:8000/api/patient/all")
       .then((res) => res.json())
       .then((data) => setPatients(data))
       .catch((err) => console.error("Failed to load patients:", err));

@@ -6,7 +6,7 @@ const History = () => {
   const [scanHistory, setScanHistory] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/patient/history")
+    fetch("http://localhost:8000/api/patient/history")
       .then((res) => res.json())
       .then((data) => setScanHistory(data))
       .catch((err) => console.error("Failed to load scan history:", err));
@@ -194,8 +194,7 @@ const History = () => {
                     </p>
                     <div style={{
                       display: 'inline-block',
-                      paddingX: '8px',
-                      paddingY: '4px',
+                      padding: '4px 8px',
                       borderRadius: '12px',
                       fontSize: '12px',
                       fontWeight: '600',

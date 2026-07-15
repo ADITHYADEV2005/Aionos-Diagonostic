@@ -98,10 +98,7 @@ export const saveScanData = async (scanData: any) => {
 // Save app settings
 export const saveSettings = async (settings: any) => {
   try {
-    await Preferences.set({
-      key: 'appSettings',
-      value: JSON.stringify(settings)
-    });
+    localStorage.setItem('appSettings', JSON.stringify(settings));
     return { success: true };
   } catch (error) {
     console.error('Error saving settings:', error);
@@ -112,7 +109,7 @@ export const saveSettings = async (settings: any) => {
 // Get app settings
 export const getSettings = async () => {
   try {
-    const { value } = await Preferences.get({ key: 'appSettings' });
+    const value = localStorage.getItem('appSettings');
     return value ? JSON.parse(value) : {
       notifications: true,
       autoBackup: true,

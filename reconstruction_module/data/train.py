@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils.class_weight import compute_class_weight
 from tensorflow.keras import layers, Model
 from tensorflow.keras.applications import EfficientNetB0
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 # ============================================================
 # CONFIGURATION
@@ -129,14 +130,14 @@ val_ds = tf.data.Dataset.from_tensor_slices(
 train_ds = train_ds.shuffle(len(train_df), seed=SEED)
 
 train_ds = train_ds.map(load_image, num_parallel_calls=AUTOTUNE)
-
+train_ds = train_ds.cache()  # Cache preprocessed images in memory to speed up training
 train_ds = train_ds.map(
     lambda x, y: (aug(x, training=True), y),
     num_parallel_calls=AUTOTUNE
 )
 
 train_ds = train_ds.batch(BATCH_SIZE).prefetch(AUTOTUNE)
-val_ds = val_ds.map(load_image).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+val_ds = val_ds.map(load_image, num_parallel_calls=AUTOTUNE).cache().batch(BATCH_SIZE).prefetch(AUTOTUNE)
 
 # ============================================================
 # MODEL
@@ -173,11 +174,28 @@ model.compile(
     metrics=["accuracy"]
 )
 
+# Setup callbacks for training efficiency
+early_stopping = EarlyStopping(
+    monitor="val_loss",
+    patience=5,
+    restore_best_weights=True,
+    verbose=1
+)
+
+reduce_lr = ReduceLROnPlateau(
+    monitor="val_loss",
+    factor=0.2,
+    patience=3,
+    min_lr=1e-6,
+    verbose=1
+)
+
 history = model.fit(
     train_ds,
     validation_data=val_ds,
     epochs=15,
-    class_weight=class_weights
+    class_weight=class_weights,
+    callbacks=[early_stopping, reduce_lr]
 )
 
 # ============================================================
@@ -196,12 +214,14 @@ model.compile(
     metrics=["accuracy"]
 )
 
+# Fine-tuning uses early stopping to prevent overfitting
 history2 = model.fit(
     train_ds,
     validation_data=val_ds,
     epochs=25,
-    initial_epoch=history.epoch[-1] + 1,
-    class_weight=class_weights
+    initial_epoch=history.epoch[-1] + 1 if hasattr(history, 'epoch') and history.epoch else 15,
+    class_weight=class_weights,
+    callbacks=[early_stopping]
 )
 
 # ============================================================

@@ -47,7 +47,7 @@ plotter.background_color = "white"
 num_points = mesh.n_points
 num_cells = mesh.n_cells
 
-print("✅ Model successfully processed and ready for React viewer.")
+print("Model successfully processed and ready for React viewer.")
 print(f"Mesh contains {num_points} points and {num_cells} cells (faces).")
 
 # Show model in PyVista

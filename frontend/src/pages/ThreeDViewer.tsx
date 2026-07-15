@@ -1,7 +1,7 @@
 import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useProgress, Html } from "@react-three/drei";
-import { STLLoader } from "node_modules/three/examples/jsm/loaders/STLLoader";
+import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import * as THREE from "three";
 import { useLoader } from "@react-three/fiber";
 import { Button } from "@/components/ui/button";
@@ -19,8 +19,8 @@ function Loader() {
 }
 
 //  Model component to load the STL file
-function Model({ url }) {
-  const geometry = useLoader(STLLoader, url);
+function Model({ url }: { url: string }) {
+  const geometry = useLoader(STLLoader, url) as THREE.BufferGeometry;
   return (
     <mesh geometry={geometry} rotation={[Math.PI / -2, 0, 0]}>
       <meshStandardMaterial color="#4f46e5" metalness={0.2} roughness={0.3} />

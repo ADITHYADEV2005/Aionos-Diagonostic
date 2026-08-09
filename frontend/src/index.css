@@ -57,4 +57,125 @@ html, body, #root {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #FAF7F2;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ─── App-wide Premium Dark Mode Overrides ─── */
+body.dark-theme,
+body.dark-theme #root,
+body.dark-theme #root > div,
+body.dark-theme div {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+body.dark-theme {
+  background-color: #0b0f19 !important;
+  color: #e5e7eb !important;
+}
+
+/* Base background for outer containers */
+body.dark-theme #root > div,
+body.dark-theme div[style*="FAF7F2"],
+body.dark-theme div[style*="faf7f2"] {
+  background-color: #0b0f19 !important;
+}
+
+/* Card containers and white boxes */
+body.dark-theme div[style*="white"],
+body.dark-theme div[style*="FFF"],
+body.dark-theme div[style*="fff"],
+body.dark-theme form,
+body.dark-theme section {
+  background-color: #161e2e !important;
+  border-color: #26334d !important;
+  color: #e5e7eb !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Headers and Fixed Navigation Bars */
+body.dark-theme div[style*="position: sticky"],
+body.dark-theme div[style*="position: 'sticky'"],
+body.dark-theme div[style*="position: fixed"],
+body.dark-theme div[style*="position: 'fixed'"] {
+  background-color: #111827 !important;
+  border-color: #1f2937 !important;
+}
+
+/* Input fields & Select elements */
+body.dark-theme input,
+body.dark-theme select,
+body.dark-theme textarea {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  border-color: #374151 !important;
+}
+
+body.dark-theme input::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Text Colors */
+body.dark-theme h1,
+body.dark-theme h2,
+body.dark-theme h3,
+body.dark-theme h4,
+body.dark-theme h5,
+body.dark-theme h6 {
+  color: #f9fafb !important;
+}
+
+body.dark-theme p,
+body.dark-theme span:not([style*="background"]),
+body.dark-theme label,
+body.dark-theme td,
+body.dark-theme th {
+  color: #d1d5db !important;
+}
+
+/* Secondary & muted text colors */
+body.dark-theme p[style*="666"],
+body.dark-theme p[style*="888"],
+body.dark-theme p[style*="999"],
+body.dark-theme span[style*="666"],
+body.dark-theme span[style*="888"],
+body.dark-theme span[style*="999"] {
+  color: #9ca3af !important;
+}
+
+/* Light button backgrounds in dark mode */
+body.dark-theme button[style*="f5f5f5"],
+body.dark-theme button[style*="E8E3DE"],
+body.dark-theme button[style*="rgba(255,255,255,0.08)"] {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  border-color: #374151 !important;
+}
+
+/* Hover effects for dark mode buttons */
+body.dark-theme button[style*="f5f5f5"]:hover {
+  background-color: #FF7B6B !important;
+  color: white !important;
+  border-color: #FF7B6B !important;
+}
+
+/* Modals backdrop and container */
+body.dark-theme div[style*="rgba(0,0,0,0.5)"] {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+body.dark-theme div[style*="rgba(0,0,0,0.5)"] > div {
+  background-color: #161e2e !important;
+  border: 1px solid #26334d !important;
+}
+
+/* Table borders & rows */
+body.dark-theme table,
+body.dark-theme tr,
+body.dark-theme td,
+body.dark-theme th {
+  border-color: #26334d !important;
+}
+
+body.dark-theme tr:hover {
+  background-color: #1f2937 !important;
 }

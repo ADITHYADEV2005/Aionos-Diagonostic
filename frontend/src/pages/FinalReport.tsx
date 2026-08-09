@@ -60,10 +60,10 @@ export default function FinalReportPage() {
 
   const metrics = summaryObj
     ? [
-        { label: "Segmented Area (Est.)", value: `${summaryObj.segmented_area_mm2_est ?? "—"} mm²`, icon: "📐" },
-        { label: "Flow Strength Index", value: String(summaryObj.flow_strength_index ?? "—"), icon: "🌊" },
-        { label: "Stiffness Index", value: `${summaryObj.stiffness_index ?? "—"} kPa`, icon: "📊" },
-        { label: "Processing Time", value: `${summaryObj.processing_time_ms ?? "—"} ms`, icon: "⚡" },
+        { label: "Segmented Area (Est.)", value: `${summaryObj.segmented_area_mm2_est ?? "—"} mm²` },
+        { label: "Flow Strength Index", value: String(summaryObj.flow_strength_index ?? "—") },
+        { label: "Stiffness Index", value: `${summaryObj.stiffness_index ?? "—"} kPa` },
+        { label: "Processing Time", value: `${summaryObj.processing_time_ms ?? "—"} ms` },
       ]
     : [];
 
@@ -119,7 +119,7 @@ export default function FinalReportPage() {
           ← Back to Pipeline
         </button>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 12 }}>
           <button
             onClick={() => navigate("/dashboard")}
             style={{
@@ -132,7 +132,7 @@ export default function FinalReportPage() {
               fontSize: 14,
             }}
           >
-            🏠 Dashboard
+            Dashboard
           </button>
 
           <button
@@ -149,13 +149,13 @@ export default function FinalReportPage() {
               boxShadow: "0 4px 15px rgba(59,130,246,0.35)",
             }}
           >
-            🧊 View 3D
+            3D View
           </button>
 
           <button
             onClick={() => navigate("/view-4d", { state: { patientName, patientId, organ, summary } })}
             style={{
-              background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+              background: "linear-gradient(135deg, #6d28d9, #8b5cf6)",
               border: "none",
               color: "white",
               padding: "10px 20px",
@@ -163,31 +163,28 @@ export default function FinalReportPage() {
               cursor: "pointer",
               fontSize: 14,
               fontWeight: 600,
-              boxShadow: "0 4px 15px rgba(168,85,247,0.35)",
+              boxShadow: "0 4px 15px rgba(139,92,246,0.35)",
             }}
           >
-            🌀 View 4D
+            4D View
           </button>
 
           <button
             onClick={handleDownloadPDF}
             disabled={downloading}
             style={{
-              background: downloading ? "#374151" : "linear-gradient(135deg, #10b981, #059669)",
+              background: downloading ? "#059669" : "linear-gradient(135deg, #10b981, #059669)",
               border: "none",
               color: "white",
               padding: "10px 24px",
               borderRadius: 8,
               cursor: downloading ? "not-allowed" : "pointer",
               fontSize: 14,
-              fontWeight: 600,
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              boxShadow: downloading ? "none" : "0 4px 15px rgba(16,185,129,0.35)",
+              fontWeight: 700,
+              boxShadow: "0 4px 15px rgba(16,185,129,0.35)",
             }}
           >
-            {downloading ? "⏳ Generating PDF..." : "⬇ Download PDF"}
+            {downloading ? "Generating PDF..." : "Download PDF Report"}
           </button>
         </div>
       </div>
@@ -279,8 +276,8 @@ export default function FinalReportPage() {
           {/* ── Quantitative Metrics ── */}
           {metrics.length > 0 && (
             <section>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
-                📈 Quantitative Metrics
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", margin: "0 0 16px" }}>
+                Quantitative Metrics
               </h2>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
                 {metrics.map((m) => (
@@ -291,7 +288,6 @@ export default function FinalReportPage() {
                     textAlign: "center",
                     border: "1px solid rgba(255,255,255,0.07)",
                   }}>
-                    <div style={{ fontSize: 22 }}>{m.icon}</div>
                     <div style={{ color: "#60a5fa", fontSize: 22, fontWeight: 800, margin: "8px 0 4px" }}>
                       {m.value}
                     </div>
@@ -306,8 +302,8 @@ export default function FinalReportPage() {
 
           {/* ── Ultrasound Images ── */}
           <section>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
-              🩻 Analyzed Scan Modes
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", margin: "0 0 16px" }}>
+              Analyzed Scan Modes
             </h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
               {scanImages.map((img) => (
@@ -328,7 +324,7 @@ export default function FinalReportPage() {
                   }}>
                     {img.title}
                   </div>
-                  <div style={{ padding: 10, display: "flex", justifyContent: "center" }}>
+                  <div style={{ padding: 10, display: "center", justifyContent: "center" }}>
                     {img.src ? (
                       <img
                         src={img.src}
@@ -371,10 +367,9 @@ export default function FinalReportPage() {
               padding: "24px",
             }}>
               <h2 style={{
-                fontSize: 16, fontWeight: 700, color: statusColor, margin: "0 0 12px",
-                display: "flex", alignItems: "center", gap: 8,
+                fontSize: 16, fontWeight: 700, color: statusColor, margin: "0 0 12px"
               }}>
-                🔬 Clinical Interpretation
+                Clinical Interpretation
               </h2>
               <p style={{
                 color: "#1e293b",
@@ -399,11 +394,8 @@ export default function FinalReportPage() {
                 fontWeight: 700,
                 color: summaryObj.treatment_required ? "#ef4444" : "#475569",
                 margin: "0 0 12px 0",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
               }}>
-                {summaryObj.treatment_required ? "🚨 Urgent Treatment Required" : "🛡️ Recommended Action"}
+                {summaryObj.treatment_required ? "Urgent Treatment Required" : "Recommended Action"}
               </h2>
               <p style={{
                 color: "#1e293b",
@@ -426,7 +418,7 @@ export default function FinalReportPage() {
             alignItems: "center",
           }}>
             <p style={{ color: "#94a3b8", fontSize: 11, margin: 0 }}>
-              ⚠️ This AI-generated report is for research/decision support only. Always confirm with a qualified radiologist.
+              This AI-generated report is for research/decision support only. Always confirm with a qualified radiologist.
             </p>
             <p style={{ color: "#cbd5e1", fontSize: 11, margin: 0 }}>
               AIONOS Diagnostics · AI Pipeline v2.0

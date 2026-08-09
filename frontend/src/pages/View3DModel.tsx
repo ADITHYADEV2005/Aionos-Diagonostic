@@ -37,7 +37,7 @@ const STLModel: React.FC<{ url: string }> = ({ url }) => {
   const geometry = useLoader(STLLoader, url, undefined, (loaderEvent) => {
     // Console log any loading errors, which is crucial for diagnosing 404s
     if (loaderEvent.type === 'error') {
-        console.error(`❌ Load Error for ${url}. Check if the file exists in the public/ folder:`, loaderEvent);
+        console.error(`Load Error for ${url}. Check if the file exists in the public/ folder:`, loaderEvent);
     }
   });
 

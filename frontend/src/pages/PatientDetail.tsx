@@ -58,7 +58,6 @@ const PatientDetail: React.FC = () => {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#FAF7F2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: font }}>
         <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '48px 40px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', maxWidth: '400px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>👤</div>
           <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#2d3436', margin: '0 0 12px 0' }}>No patient selected</h2>
           <p style={{ fontSize: '14px', color: '#666666', margin: '0 0 24px 0' }}>
             Please open a patient from the Patients or History page.
@@ -155,17 +154,14 @@ const PatientDetail: React.FC = () => {
 
         {loading ? (
           <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '48px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>⏳</div>
             <p style={{ fontSize: '14px', color: '#999999', margin: 0 }}>Loading patient scan history…</p>
           </div>
         ) : error ? (
           <div style={{ backgroundColor: '#fff5f5', border: '1px solid #ffcccc', borderRadius: '12px', padding: '24px', textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>⚠️</div>
             <p style={{ fontSize: '14px', color: '#e74c3c', margin: 0, fontWeight: '600' }}>{error}</p>
           </div>
         ) : scans.length === 0 ? (
           <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '48px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>📋</div>
             <p style={{ fontSize: '14px', color: '#999999', margin: 0 }}>No scan results found for this patient yet.</p>
           </div>
         ) : (

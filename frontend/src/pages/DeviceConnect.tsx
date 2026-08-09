@@ -55,6 +55,13 @@ const DeviceConnect: React.FC = () => {
     setScanLabel("Initialising scanner");
   };
 
+  const handleManualFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      navigate("/upload-details", { state: { file } });
+    }
+  };
+
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#FAF7F2", fontFamily: FONT }}>
 
@@ -126,9 +133,9 @@ const DeviceConnect: React.FC = () => {
                 borderRadius: "50%",
                 background: `linear-gradient(135deg, ${PRIMARY}, #FF9A84)`,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "36px",
+                color: "white", fontWeight: "bold", fontSize: "20px",
                 boxShadow: `0 8px 32px rgba(255,123,107,0.35)`,
-              }}>📡</div>
+              }}>SCAN</div>
               {/* Spinning arc */}
               <div style={{
                 position: "absolute", top: "50%", left: "50%",
@@ -175,14 +182,6 @@ const DeviceConnect: React.FC = () => {
         {/* ── NO DEVICE FOUND ────────────────────────────────────────────── */}
         {phase === "not_found" && (
           <div style={{ animation: "fadeIn 0.5s ease both" }}>
-            {/* Icon */}
-            <div style={{
-              width: "96px", height: "96px", borderRadius: "50%",
-              backgroundColor: "#f5f5f5", border: "2px solid #e8e8e8",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "44px", margin: "0 auto 28px"
-            }}>🔍</div>
-
             <h2 style={{ fontSize: "22px", fontWeight: "700", color: "#2d3436", margin: "0 0 10px 0" }}>
               No devices found
             </h2>
@@ -201,14 +200,13 @@ const DeviceConnect: React.FC = () => {
                 Troubleshooting tips
               </p>
               {[
-                { icon: "🔋", text: "Ensure the probe battery is charged" },
-                { icon: "📶", text: "Move the probe closer to this device" },
-                { icon: "🔄", text: "Press and hold the probe's pairing button" },
-                { icon: "📱", text: "Turn Bluetooth on and off, then retry" },
+                { text: "Ensure the probe battery is charged" },
+                { text: "Move the probe closer to this device" },
+                { text: "Press and hold the probe's pairing button" },
+                { text: "Turn Bluetooth on and off, then retry" },
               ].map(tip => (
                 <div key={tip.text} style={{ display: "flex", gap: "12px", alignItems: "flex-start", marginBottom: "10px" }}>
-                  <span style={{ fontSize: "18px", lineHeight: 1 }}>{tip.icon}</span>
-                  <p style={{ fontSize: "13px", color: "#555", margin: 0, lineHeight: "1.5" }}>{tip.text}</p>
+                  <p style={{ fontSize: "13px", color: "#555", margin: 0, lineHeight: "1.5" }}>• {tip.text}</p>
                 </div>
               ))}
             </div>
@@ -225,10 +223,10 @@ const DeviceConnect: React.FC = () => {
                 onMouseOver={e => { e.currentTarget.style.opacity = "0.85"; }}
                 onMouseOut={e => { e.currentTarget.style.opacity = "1"; }}
               >
-                🔄 Scan Again
+                Scan Again
               </button>
               <button
-                onClick={() => navigate("/upload-details")}
+                onClick={() => document.getElementById("manualFileInput")?.click()}
                 style={{
                   padding: "14px", backgroundColor: "transparent",
                   border: `1.5px solid ${PRIMARY}`, borderRadius: "10px",
@@ -238,8 +236,17 @@ const DeviceConnect: React.FC = () => {
                 onMouseOver={e => { e.currentTarget.style.backgroundColor = `${PRIMARY}10`; }}
                 onMouseOut={e => { e.currentTarget.style.backgroundColor = "transparent"; }}
               >
-                ↑ Upload scan manually instead
+                Upload scan manually instead
               </button>
+
+              {/* Hidden File Input for Manual Scan Upload */}
+              <input
+                id="manualFileInput"
+                type="file"
+                onChange={handleManualFileSelect}
+                style={{ display: "none" }}
+                accept="image/*,.dcm"
+              />
             </div>
           </div>
         )}

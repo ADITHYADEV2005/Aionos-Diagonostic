@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
 import LoggedIn from './pages/LoggedIn'
@@ -17,6 +18,20 @@ import FinalReportPage from './pages/FinalReport'
 import './App.css'
 
 function App() {
+  useEffect(() => {
+    const applyTheme = () => {
+      const isDark = localStorage.getItem('setting_darkMode') === 'true'
+      if (isDark) {
+        document.body.classList.add('dark-theme')
+      } else {
+        document.body.classList.remove('dark-theme')
+      }
+    }
+    applyTheme()
+    window.addEventListener('storage', applyTheme)
+    return () => window.removeEventListener('storage', applyTheme)
+  }, [])
+
   return (
     <Router>
       <Routes>

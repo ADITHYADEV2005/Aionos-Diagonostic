@@ -9,7 +9,7 @@ const UploadDetails = () => {
 
   const [patientName, setPatientName] = useState("");
   const [patientId, setPatientId] = useState("");
-  const [organ, setOrgan] = useState("");
+  const [organ, setOrgan] = useState("Liver");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +19,7 @@ const UploadDetails = () => {
       state: {
         patientName,
         patientId,
-        organ,
+        organ: organ || "Liver",
         file,
       },
     });
@@ -28,7 +28,10 @@ const UploadDetails = () => {
   return (
     <div className="min-h-screen bg-gradient-secondary flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
-        <h2 className="text-2xl font-bold text-center mb-6">Patient Scan Details</h2>
+        <h2 className="text-2xl font-bold text-center mb-1">Patient Scan Details</h2>
+        <p className="text-xs text-center text-primary font-semibold uppercase tracking-wider mb-6">
+          Implemented for Liver AI Diagnostics
+        </p>
 
         {file && (
           <div className="mb-4">
@@ -60,21 +63,26 @@ const UploadDetails = () => {
             required
           />
 
-          <input
-            type="text"
-            placeholder="Organ"
-            value={organ}
-            onChange={(e) => setOrgan(e.target.value)}
-            className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            required
-          />
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+              Target Organ (AI Model Implemented)
+            </label>
+            <input
+              type="text"
+              placeholder="Organ"
+              value={organ}
+              onChange={(e) => setOrgan(e.target.value)}
+              className="w-full px-4 py-3 border rounded-lg bg-gray-50 font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary"
+              required
+            />
+          </div>
 
           <Button
             type="submit"
             size="lg"
             className="w-full bg-gradient-primary hover:shadow-glow text-lg font-semibold py-4 rounded-full"
           >
-            Submit
+            Submit & Run Liver AI Pipeline
           </Button>
         </form>
       </div>

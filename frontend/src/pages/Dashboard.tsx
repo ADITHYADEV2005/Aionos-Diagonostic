@@ -8,12 +8,17 @@ const Dashboard: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
-    } else {
-      navigate("/LoggedIn");
-    }
+    const loadUser = () => {
+      const userData = localStorage.getItem("user");
+      if (userData) {
+        setUser(JSON.parse(userData));
+      } else {
+        navigate("/LoggedIn");
+      }
+    };
+    loadUser();
+
+    window.addEventListener("user-updated", loadUser);
 
     fetch("http://localhost:8000/api/patient/recent")
       .then((response) => response.json())
@@ -31,6 +36,8 @@ const Dashboard: React.FC = () => {
       .catch((error) => {
         console.error("Failed to load recent patients:", error);
       });
+
+    return () => window.removeEventListener("user-updated", loadUser);
   }, [navigate]);
 
   const handleLogout = () => {
@@ -114,7 +121,7 @@ const Dashboard: React.FC = () => {
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px'
               }}>
-                Diagnostics
+                Liver AI Diagnostics
               </p>
             </div>
           </div>
@@ -154,10 +161,12 @@ const Dashboard: React.FC = () => {
         padding: '24px 20px'
       }}>
         
-        {/* User Section */}
+        {/* User & Implemented Organ Banner Section */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
           gap: '16px',
           marginBottom: '32px',
           backgroundColor: 'white',
@@ -165,37 +174,65 @@ const Dashboard: React.FC = () => {
           borderRadius: '12px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
         }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              backgroundColor: '#FFE8E1',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: '#FF7B6B',
+              flexShrink: 0,
+              border: user?.avatar ? '2px solid #FF7B6B' : 'none'
+            }}>
+              {user?.avatar ? (
+                <img src={user.avatar} alt="Profile DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                user ? getInitials(user.name) : 'US'
+              )}
+            </div>
+            <div>
+              <h2 style={{
+                fontSize: '18px',
+                fontWeight: '700',
+                color: '#2d3436',
+                margin: '0 0 4px 0'
+              }}>
+                {user ? user.name : 'Loading...'}
+              </h2>
+              <p style={{
+                fontSize: '13px',
+                color: '#666666',
+                margin: '0'
+              }}>
+                {user ? user.email : 'Fetching...'}
+              </p>
+            </div>
+          </div>
+
           <div style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: '12px',
-            backgroundColor: '#FFE8E1',
+            backgroundColor: '#FAF7F2',
+            border: '1px solid #E8E3DE',
+            borderRadius: '8px',
+            padding: '8px 14px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '24px',
-            fontWeight: 'bold',
-            color: '#FF7B6B',
-            flexShrink: 0
+            gap: '8px'
           }}>
-            {user ? getInitials(user.name) : 'US'}
-          </div>
-          <div style={{ flex: 1 }}>
-            <h2 style={{
-              fontSize: '18px',
-              fontWeight: '700',
-              color: '#2d3436',
-              margin: '0 0 4px 0'
-            }}>
-              {user ? user.name : 'Loading...'}
-            </h2>
-            <p style={{
-              fontSize: '13px',
-              color: '#666666',
-              margin: '0'
-            }}>
-              {user ? user.email : 'Fetching...'}
-            </p>
+            <span style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: '#22c55e'
+            }} />
+            <span style={{ fontSize: '12px', fontWeight: '700', color: '#2d3436' }}>
+              Target Organ Implemented: <span style={{ color: '#FF7B6B' }}>Liver</span>
+            </span>
           </div>
         </div>
 
@@ -246,14 +283,14 @@ const Dashboard: React.FC = () => {
               color: '#2d3436',
               margin: '0 0 8px 0'
             }}>
-              New Scan
+              New Liver Scan
             </h3>
             <p style={{
               fontSize: '12px',
               color: '#666666',
               margin: '0'
             }}>
-              Start diagnostic scan
+              Start liver diagnostic scan
             </p>
           </div>
 
@@ -297,14 +334,14 @@ const Dashboard: React.FC = () => {
               color: '#2d3436',
               margin: '0 0 8px 0'
             }}>
-              Upload File
+              Upload Liver Scan
             </h3>
             <p style={{
               fontSize: '12px',
               color: '#666666',
               margin: '0'
             }}>
-              Import scan files
+              Import liver scan files
             </p>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { AI_API_URL } from "../config/api";
 
 export default function AIPipelinePage() {
     const location = useLocation();
@@ -26,7 +27,7 @@ export default function AIPipelinePage() {
         setLoading(true);
         setError(null);
 
-        const BACKEND_URL = "http://localhost:8000/api/patient/add";
+        const BACKEND_URL = `${AI_API_URL}/patient/add`;
 
         try {
             const fd = new FormData();
@@ -71,7 +72,7 @@ export default function AIPipelinePage() {
         } catch (err) {
             console.error("Pipeline Error:", err);
             const message = err.message.includes("fetch")
-                ? "Network Error: Could not connect to the AI server at http://localhost:8000. Please check if the backend is running."
+                ? `Network Error: Could not connect to the AI server at ${AI_API_URL}. Please check if the backend is running.`
                 : String(err.message || err);
             setError(message);
         } finally {

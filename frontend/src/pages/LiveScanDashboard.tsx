@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { AI_API_URL } from "@/config/api";
 
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 const PRIMARY = "#FF7B6B";
@@ -39,7 +40,7 @@ const LiveScanDashboard: React.FC = () => {
 
   // Fetch available COM ports on mount
   useEffect(() => {
-    fetch("http://localhost:8000/api/hardware/ports")
+    fetch(`${AI_API_URL}/hardware/ports`)
       .then((res) => res.json())
       .then((data) => {
         if (data.ports) setAvailablePorts(data.ports);
@@ -57,7 +58,7 @@ const LiveScanDashboard: React.FC = () => {
   }, []);
 
   const handleConnect = (portToConnect: string) => {
-    fetch("http://localhost:8000/api/hardware/connect", {
+    fetch(`${AI_API_URL}/hardware/connect`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ port: portToConnect }),
@@ -78,7 +79,7 @@ const LiveScanDashboard: React.FC = () => {
       eventSourceRef.current.close();
       eventSourceRef.current = null;
     }
-    fetch("http://localhost:8000/api/hardware/disconnect", { method: "POST" })
+    fetch(`${AI_API_URL}/hardware/disconnect`, { method: "POST" })
       .then(() => setIsConnected(false))
       .catch(() => setIsConnected(false));
   };
@@ -88,7 +89,7 @@ const LiveScanDashboard: React.FC = () => {
       eventSourceRef.current.close();
     }
 
-    const sse = new EventSource("http://localhost:8000/api/hardware/sse");
+    const sse = new EventSource(`${AI_API_URL}/hardware/sse`);
     eventSourceRef.current = sse;
 
     sse.onmessage = (event) => {

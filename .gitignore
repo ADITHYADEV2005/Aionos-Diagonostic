@@ -15,7 +15,8 @@ env/
 # AI assets
 dataset/
 checkpoints/
-models/
+/models/
+!backend/models/
 logs/
 
 # VS Code

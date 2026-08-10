@@ -1,5 +1,6 @@
 import React, { useState, useEffect, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { AI_API_URL } from "@/config/api";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const Dashboard: React.FC = () => {
 
     window.addEventListener("user-updated", loadUser);
 
-    fetch("http://localhost:8000/api/patient/recent")
+    fetch(`${AI_API_URL}/patient/recent`)
       .then((response) => response.json())
       .then((data) => {
         // Deduplicate by patientId – keep only the most recent entry per patient

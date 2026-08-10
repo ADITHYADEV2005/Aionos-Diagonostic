@@ -2,27 +2,12 @@ import express from "express";
 import mongoose from "mongoose";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 const router = express.Router();
 
-// ─── Email Transporter ─────────────────────────────────────────────────────
-const createTransporter = () => nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // STARTTLS
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false,
-    ciphers: "SSLv3",
-  },
-  connectionTimeout: 15000,
-  greetingTimeout: 15000,
-  socketTimeout: 20000,
-});
+// ─── Email (Resend HTTP API — works on Render free tier) ──────────────────
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -33,9 +18,8 @@ const generateToken = (id) =>
   });
 
 const sendOTPEmail = async (email, otp, purpose = "verification") => {
-  // Fast fail if email credentials are not configured
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    throw new Error("Email service not configured. Please set EMAIL_USER and EMAIL_PASS environment variables on your hosting platform.");
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error("Email service not configured. Please set RESEND_API_KEY in your hosting environment variables.");
   }
   const subject =
     purpose === "login"
@@ -57,13 +41,14 @@ const sendOTPEmail = async (email, otp, purpose = "verification") => {
     </div>
   `;
 
-  const transporter = createTransporter();
-  await transporter.sendMail({
-    from: `"Aionos Diagnostics" <${process.env.EMAIL_USER}>`,
+  const { error } = await resend.emails.send({
+    from: "Aionos Diagnostics <onboarding@resend.dev>",
     to: email,
     subject,
     html,
   });
+
+  if (error) throw new Error(`Email send failed: ${error.message}`);
 };
 
 // ─── Routes ────────────────────────────────────────────────────────────────
@@ -73,8 +58,7 @@ const sendOTPEmail = async (email, otp, purpose = "verification") => {
 router.get("/health", (req, res) => {
   res.json({
     server: "ok",
-    emailConfigured: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS),
-    emailUser: process.env.EMAIL_USER || "NOT SET",
+    emailConfigured: !!process.env.RESEND_API_KEY,
     mongoConnected: mongoose.connection.readyState === 1,
     mongoState: ["disconnected","connected","connecting","disconnecting"][mongoose.connection.readyState] || "unknown",
   });

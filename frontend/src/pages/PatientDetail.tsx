@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { AI_API_URL } from "@/config/api";
 
 interface ScanRecord {
   _id: string;
@@ -37,7 +38,7 @@ const PatientDetail: React.FC = () => {
       return;
     }
 
-    fetch(`http://localhost:8000/api/patient/${patient.patientId}`)
+    fetch(`${AI_API_URL}/patient/${patient.patientId}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch patient details.");
         return res.json();

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AI_API_URL } from "@/config/api";
 
 const Patients = () => {
   const navigate = useNavigate();
@@ -7,7 +8,7 @@ const Patients = () => {
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/patient/all")
+    fetch(`${AI_API_URL}/patient/all`)
       .then((res) => res.json())
       .then((data) => setPatients(data))
       .catch((err) => console.error("Failed to load patients:", err));

@@ -24,6 +24,19 @@ const userSchema = new mongoose.Schema({
     minlength: 6,
     select: false // Don't return password by default
   },
+  // OTP fields for email verification
+  otp: {
+    type: String,
+    default: null
+  },
+  otpExpiry: {
+    type: Date,
+    default: null
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now

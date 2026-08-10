@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { AI_API_URL } from "@/config/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface NavButtonProps {
@@ -265,7 +266,7 @@ const Settings = () => {
 
   const handleManualSync = () => {
     setSyncing(true);
-    fetch("http://localhost:8000/api/patient/history")
+    fetch(`${AI_API_URL}/patient/history`)
       .then(res => res.json())
       .then(data => {
         const now = new Date().toLocaleTimeString();
@@ -281,7 +282,7 @@ const Settings = () => {
 
   // Export JSON Backup
   const handleExportBackup = () => {
-    fetch("http://localhost:8000/api/patient/history")
+    fetch(`${AI_API_URL}/patient/history`)
       .then(res => res.json())
       .then(data => {
         const backupPayload = {

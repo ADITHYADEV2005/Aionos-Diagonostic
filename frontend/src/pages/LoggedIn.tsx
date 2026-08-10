@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AionosLogo } from "@/components/AionosLogo";
+import { AUTH_API_URL } from "@/config/api";
 
 const LoggedIn = () => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const LoggedIn = () => {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/login", {
+      const res = await fetch(`${AUTH_API_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

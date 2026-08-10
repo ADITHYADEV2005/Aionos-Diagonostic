@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
@@ -73,7 +74,8 @@ router.get("/health", (req, res) => {
     server: "ok",
     emailConfigured: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS),
     emailUser: process.env.EMAIL_USER || "NOT SET",
-    mongoConnected: require("mongoose").connection.readyState === 1,
+    mongoConnected: mongoose.connection.readyState === 1,
+    mongoState: ["disconnected","connected","connecting","disconnecting"][mongoose.connection.readyState] || "unknown",
   });
 });
 

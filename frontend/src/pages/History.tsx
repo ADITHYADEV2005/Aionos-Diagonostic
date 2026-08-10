@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AI_API_URL } from "@/config/api";
 
 const History = () => {
   const navigate = useNavigate();
   const [scanHistory, setScanHistory] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/patient/history")
+    fetch(`${AI_API_URL}/patient/history`)
       .then((res) => res.json())
       .then((data) => setScanHistory(data))
       .catch((err) => console.error("Failed to load scan history:", err));

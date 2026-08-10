@@ -32,12 +32,16 @@ const LoggedIn = () => {
     setError("");
     if (!email || !password) { setError("Please enter both email and password"); return; }
     setLoading(true);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
     try {
       const res = await fetch(`${AUTH_API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
       const text = await res.text();
       let data: any = {};
       try { data = JSON.parse(text); } catch { throw new Error(`Bad response: ${text.slice(0, 100)}`); }
@@ -49,9 +53,14 @@ const LoggedIn = () => {
         setError(data.message || "Invalid email or password");
       }
     } catch (err: any) {
-      setError(AUTH_API_URL.includes("localhost")
-        ? `Connection error: Set VITE_AUTH_API_URL in your hosting env to your live backend URL.`
-        : `Could not reach backend. Render free tier may be waking up — wait 30s and try again.`);
+      clearTimeout(timeout);
+      if (err.name === "AbortError") {
+        setError("Request timed out. The backend server may be starting up (Render free tier takes 30-50s). Please try again.");
+      } else {
+        setError(AUTH_API_URL.includes("localhost")
+          ? `Connection error: Set VITE_AUTH_API_URL in your hosting env to your live backend URL.`
+          : `Could not reach backend. Render free tier may be waking up — wait 30s and try again.`);
+      }
     } finally {
       setLoading(false);
     }

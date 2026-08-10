@@ -12,6 +12,9 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  connectionTimeout: 8000,  // 8s connection timeout
+  greetingTimeout: 8000,
+  socketTimeout: 10000,
 });
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -23,6 +26,10 @@ const generateToken = (id) =>
   });
 
 const sendOTPEmail = async (email, otp, purpose = "verification") => {
+  // Fast fail if email credentials are not configured
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    throw new Error("Email service not configured. Please set EMAIL_USER and EMAIL_PASS environment variables on your hosting platform.");
+  }
   const subject =
     purpose === "login"
       ? "Aionos Diagnostics – Your Login OTP"

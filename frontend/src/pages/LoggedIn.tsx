@@ -43,7 +43,12 @@ const LoggedIn = () => {
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError("Connection error. Please check your backend.");
+      const isLocal = AUTH_API_URL.includes("localhost");
+      if (isLocal) {
+        setError(`Connection error: Frontend is attempting to connect to ${AUTH_API_URL}. Please set VITE_AUTH_API_URL in your hosting environment variables to your live backend URL.`);
+      } else {
+        setError(`Connection error: Could not reach backend at ${AUTH_API_URL}. If your backend is hosted on Render free tier, it may be spinning up (takes 30-50 seconds). Please try again in a moment.`);
+      }
     } finally {
       setLoading(false);
     }

@@ -36,7 +36,13 @@ const Signup = () => {
         body: JSON.stringify({ name, email, password }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        throw new Error(`Invalid JSON response from ${AUTH_API_URL}/signup: ${text.slice(0, 100)}`);
+      }
 
       if (res.ok) {
         setTimeout(() => {

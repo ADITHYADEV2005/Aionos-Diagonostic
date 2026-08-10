@@ -30,12 +30,18 @@ const LoggedIn = () => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        throw new Error(`Invalid JSON response from ${AUTH_API_URL}/login: ${text.slice(0, 100)}`);
+      }
 
       if (res.ok) {
         localStorage.setItem(
           "user",
-          JSON.stringify({ name: data.user.name, email: data.user.email })
+          JSON.stringify({ name: data.user?.name || email.split("@")[0], email })
         );
         navigate("/dashboard");
       } else {

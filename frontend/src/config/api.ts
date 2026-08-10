@@ -2,8 +2,12 @@
 // Resolves backend URLs dynamically based on environment variables for local dev and cloud deployment.
 
 const getCleanUrl = (url: string | undefined, fallback: string): string => {
-  const base = (url && url.trim()) ? url.trim() : fallback;
-  return base.replace(/\/+$/, "");
+  let base = (url && url.trim()) ? url.trim() : fallback;
+  base = base.replace(/\/+$/, "");
+  if (!base.toLowerCase().endsWith("/api")) {
+    base = `${base}/api`;
+  }
+  return base;
 };
 
 export const AUTH_API_URL = getCleanUrl(

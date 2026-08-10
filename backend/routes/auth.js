@@ -6,15 +6,20 @@ import nodemailer from "nodemailer";
 const router = express.Router();
 
 // ─── Email Transporter ─────────────────────────────────────────────────────
-const transporter = nodemailer.createTransport({
-  service: "gmail",
+const createTransporter = () => nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // SSL
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  connectionTimeout: 8000,  // 8s connection timeout
-  greetingTimeout: 8000,
-  socketTimeout: 10000,
+  tls: {
+    rejectUnauthorized: false,
+  },
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
+  socketTimeout: 20000,
 });
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -50,6 +55,7 @@ const sendOTPEmail = async (email, otp, purpose = "verification") => {
     </div>
   `;
 
+  const transporter = createTransporter();
   await transporter.sendMail({
     from: `"Aionos Diagnostics" <${process.env.EMAIL_USER}>`,
     to: email,
@@ -59,6 +65,17 @@ const sendOTPEmail = async (email, otp, purpose = "verification") => {
 };
 
 // ─── Routes ────────────────────────────────────────────────────────────────
+
+// @route  GET /api/health
+// @desc   Check server, MongoDB and email config status
+router.get("/health", (req, res) => {
+  res.json({
+    server: "ok",
+    emailConfigured: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS),
+    emailUser: process.env.EMAIL_USER || "NOT SET",
+    mongoConnected: require("mongoose").connection.readyState === 1,
+  });
+});
 
 // @route  POST /api/signup
 // @desc   Register user and send OTP to email

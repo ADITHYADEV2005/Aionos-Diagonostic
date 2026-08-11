@@ -21,6 +21,7 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState("Sending OTP...");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [step, setStep] = useState<"form" | "otp">("form");
@@ -35,8 +36,12 @@ const Signup = () => {
     if (!name || !email || !password) { setError("Please fill in all fields"); return; }
     if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
     setLoading(true);
+    setLoadingMsg("Sending OTP...");
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    // 70s timeout — Render free tier cold starts take 30-50s
+    const timeout = setTimeout(() => controller.abort(), 70000);
+    // After 6s show a friendlier message if still loading
+    const slowMsg = setTimeout(() => setLoadingMsg("Waking up server (first request takes ~30s)..."), 6000);
     try {
       const res = await fetch(`${AUTH_API_URL}/signup`, {
         method: "POST",
@@ -44,7 +49,7 @@ const Signup = () => {
         body: JSON.stringify({ name, email, password }),
         signal: controller.signal,
       });
-      clearTimeout(timeout);
+      clearTimeout(timeout); clearTimeout(slowMsg);
       const text = await res.text();
       let data: any = {};
       try { data = JSON.parse(text); } catch { throw new Error(`Bad response: ${text.slice(0, 100)}`); }
@@ -56,16 +61,17 @@ const Signup = () => {
         setError(data.message || "Registration failed. Please try again.");
       }
     } catch (err: any) {
-      clearTimeout(timeout);
+      clearTimeout(timeout); clearTimeout(slowMsg);
       if (err.name === "AbortError") {
-        setError("Request timed out. The backend may be starting up — please try again in 30 seconds.");
+        setError("Still starting up after 70s. Please wait a moment and try again.");
       } else {
         setError(AUTH_API_URL.includes("localhost")
           ? `Connection error: Set VITE_AUTH_API_URL in your hosting env to your live backend URL.`
-          : `Could not reach backend. Render free tier may be waking up — wait 30s and try again.`);
+          : `Could not reach backend. Please wait 10 seconds and try again.`);
       }
     } finally {
       setLoading(false);
+      setLoadingMsg("Sending OTP...");
     }
   };
 
@@ -171,7 +177,7 @@ const Signup = () => {
               style={{ width: "100%", padding: "12px 16px", backgroundColor: loading ? "#ccc" : "#FF7B6B", color: "white", fontSize: "14px", fontWeight: "600", border: "none", borderRadius: "8px", cursor: loading ? "not-allowed" : "pointer", transition: "all 0.3s", marginTop: "8px" }}
               onMouseOver={(e) => { if (!loading) e.currentTarget.style.backgroundColor = "#FF5A45"; }}
               onMouseOut={(e) => { if (!loading) e.currentTarget.style.backgroundColor = "#FF7B6B"; }}>
-              {loading ? "Sending OTP..." : "Create Account"}
+              {loading ? loadingMsg : "Create Account"}
             </button>
           </form>
         )}

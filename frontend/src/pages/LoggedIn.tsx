@@ -20,6 +20,7 @@ const LoggedIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState("Sending OTP...");
   const [error, setError] = useState("");
   const [step, setStep] = useState<"credentials" | "otp">("credentials");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -32,8 +33,11 @@ const LoggedIn = () => {
     setError("");
     if (!email || !password) { setError("Please enter both email and password"); return; }
     setLoading(true);
+    setLoadingMsg("Sending OTP...");
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    // 70s timeout — Render free tier cold starts take 30-50s
+    const timeout = setTimeout(() => controller.abort(), 70000);
+    const slowMsg = setTimeout(() => setLoadingMsg("Waking up server (~30s)..."), 6000);
     try {
       const res = await fetch(`${AUTH_API_URL}/login`, {
         method: "POST",
@@ -41,7 +45,7 @@ const LoggedIn = () => {
         body: JSON.stringify({ email, password }),
         signal: controller.signal,
       });
-      clearTimeout(timeout);
+      clearTimeout(timeout); clearTimeout(slowMsg);
       const text = await res.text();
       let data: any = {};
       try { data = JSON.parse(text); } catch { throw new Error(`Bad response: ${text.slice(0, 100)}`); }
@@ -53,16 +57,17 @@ const LoggedIn = () => {
         setError(data.message || "Invalid email or password");
       }
     } catch (err: any) {
-      clearTimeout(timeout);
+      clearTimeout(timeout); clearTimeout(slowMsg);
       if (err.name === "AbortError") {
-        setError("Request timed out. The backend server may be starting up (Render free tier takes 30-50s). Please try again.");
+        setError("Still starting up after 70s. Please wait a moment and try again.");
       } else {
         setError(AUTH_API_URL.includes("localhost")
           ? `Connection error: Set VITE_AUTH_API_URL in your hosting env to your live backend URL.`
-          : `Could not reach backend. Render free tier may be waking up — wait 30s and try again.`);
+          : `Could not reach backend. Please wait 10 seconds and try again.`);
       }
     } finally {
       setLoading(false);
+      setLoadingMsg("Sending OTP...");
     }
   };
 
@@ -177,7 +182,7 @@ const LoggedIn = () => {
               style={{ width: "100%", padding: "12px 16px", backgroundColor: loading ? "#ccc" : "#FF7B6B", color: "white", fontSize: "14px", fontWeight: "600", border: "none", borderRadius: "8px", cursor: loading ? "not-allowed" : "pointer", transition: "all 0.3s", marginTop: "8px" }}
               onMouseOver={(e) => { if (!loading) { e.currentTarget.style.backgroundColor = "#FF5A45"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(255,123,107,0.3)"; } }}
               onMouseOut={(e) => { if (!loading) { e.currentTarget.style.backgroundColor = "#FF7B6B"; e.currentTarget.style.boxShadow = "none"; } }}>
-              {loading ? "Sending OTP..." : "Sign In"}
+              {loading ? loadingMsg : "Sign In"}
             </button>
           </form>
         )}

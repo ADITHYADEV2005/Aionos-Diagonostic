@@ -43,47 +43,14 @@ const sendOTPEmail = async (email, otp, purpose = "verification") => {
     </div>
   `;
 
-  // ── Send via Resend HTTP API (Port 443 — never blocked on cloud hosts) ─────
-  if (process.env.RESEND_API_KEY) {
-    try {
-      const { error } = await getResend().emails.send({
-        from: "Aionos Diagnostics <onboarding@resend.dev>",
-        to: email,
-        subject,
-        html,
-      });
-
-      if (!error) return; // ✅ Email sent successfully!
-
-      // If Resend free tier sandbox restriction (only allowed to send to account owner email)
-      if (error.message?.includes("can only send testing emails")) {
-        console.warn(`[Auth Warning] Resend sandbox restriction for ${email}. Routing sandbox notification copy.`);
-        // Send notification copy to account owner so test emails are received
-        await getResend().emails.send({
-          from: "Aionos Diagnostics <onboarding@resend.dev>",
-          to: process.env.EMAIL_USER || "adithyadevkichu@gmail.com",
-          subject: `[Sandbox OTP for ${email}] ${subject}`,
-          html: `<p><strong>Testing Sandbox OTP for ${email}:</strong></p>` + html,
-        });
-        return; // ✅ Success in sandbox mode!
-      }
-
-      throw new Error(`Resend email failed: ${error.message}`);
-    } catch (resendErr) {
-      if (resendErr.message?.includes("can only send testing emails")) {
-        console.warn(`[Auth Warning] Sandbox mode OTP generated for ${email}: ${otp}`);
-        return;
-      }
-      console.error("[Auth Error] Resend failed:", resendErr.message);
-    }
-  }
-
-  // ── Try Gmail SMTP (if Resend is not configured) ─────────────────────────
+  // ── 1. Try Gmail SMTP First (Port 465 SSL — delivers directly to filled email) ──
   if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
     try {
       const nodemailer = await import("nodemailer");
       const transporter = nodemailer.default.createTransport({
-        service: "gmail",
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true, // SSL port 465 avoids cloud port 587 blocks
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASS,
@@ -96,14 +63,44 @@ const sendOTPEmail = async (email, otp, purpose = "verification") => {
         subject,
         html,
       });
-      return;
+
+      console.log(`[Auth Success] OTP email sent via Gmail to: ${email}`);
+      return; // ✅ Delivered directly to filled email!
     } catch (smtpErr) {
-      console.warn("[Auth Warning] Gmail SMTP failed/blocked on cloud port:", smtpErr.message);
+      console.warn("[Auth Warning] Gmail SMTP 465 failed:", smtpErr.message);
+    }
+  }
+
+  // ── 2. Fallback to Resend HTTP API (Port 443) ─────────────────────────────
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const { error } = await getResend().emails.send({
+        from: "Aionos Diagnostics <onboarding@resend.dev>",
+        to: email,
+        subject,
+        html,
+      });
+
+      if (!error) return; // ✅ Sent via Resend
+
+      if (error.message?.includes("can only send testing emails")) {
+        console.warn(`[Auth Warning] Resend sandbox restriction for ${email}. Routing copy to owner.`);
+        await getResend().emails.send({
+          from: "Aionos Diagnostics <onboarding@resend.dev>",
+          to: process.env.EMAIL_USER || "adithyadevkichu@gmail.com",
+          subject: `[Sandbox OTP for ${email}] ${subject}`,
+          html: `<p><strong>Testing Sandbox OTP for ${email}:</strong></p>` + html,
+        });
+        return;
+      }
+    } catch (resendErr) {
+      console.error("[Auth Error] Resend failed:", resendErr.message);
     }
   }
 
   console.log(`[Auth Fallback] OTP for ${email}: ${otp}`);
 };
+
 
 
 

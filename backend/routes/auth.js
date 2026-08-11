@@ -7,7 +7,12 @@ import { Resend } from "resend";
 const router = express.Router();
 
 // ─── Email (Resend HTTP API — works on Render free tier) ──────────────────
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-initialize so startup doesn't crash if env isn't loaded yet
+let _resend = null;
+const getResend = () => {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+};
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -41,7 +46,7 @@ const sendOTPEmail = async (email, otp, purpose = "verification") => {
     </div>
   `;
 
-  const { error } = await resend.emails.send({
+  const { error } = await getResend().emails.send({
     from: "Aionos Diagnostics <onboarding@resend.dev>",
     to: email,
     subject,

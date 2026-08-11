@@ -6,7 +6,7 @@ import { Resend } from "resend";
 
 const router = express.Router();
 
-// ─── Email (Resend HTTP API — works on Render free tier) ──────────────────
+// ─── Email (Resend primary, Gmail SMTP fallback) ──────────────────────────
 // Lazy-initialize so startup doesn't crash if env isn't loaded yet
 let _resend = null;
 const getResend = () => {
@@ -23,9 +23,6 @@ const generateToken = (id) =>
   });
 
 const sendOTPEmail = async (email, otp, purpose = "verification") => {
-  if (!process.env.RESEND_API_KEY) {
-    throw new Error("Email service not configured. Please set RESEND_API_KEY in your hosting environment variables.");
-  }
   const subject =
     purpose === "login"
       ? "Aionos Diagnostics – Your Login OTP"
@@ -46,15 +43,53 @@ const sendOTPEmail = async (email, otp, purpose = "verification") => {
     </div>
   `;
 
-  const { error } = await getResend().emails.send({
-    from: "Aionos Diagnostics <onboarding@resend.dev>",
+  // ── Try Resend first ────────────────────────────────────────────────────
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const { error } = await getResend().emails.send({
+        from: "Aionos Diagnostics <onboarding@resend.dev>",
+        to: email,
+        subject,
+        html,
+      });
+      if (!error) return; // success — done
+      // If Resend sandbox restriction, fall through to Gmail
+      if (!error.message?.includes("can only send testing emails")) {
+        throw new Error(`Email send failed: ${error.message}`);
+      }
+      console.warn("[Auth] Resend sandbox limit hit — falling back to Gmail SMTP");
+    } catch (resendErr) {
+      if (!resendErr.message?.includes("can only send testing emails")) {
+        throw resendErr;
+      }
+      console.warn("[Auth] Resend sandbox limit — falling back to Gmail SMTP");
+    }
+  }
+
+  // ── Gmail SMTP fallback (nodemailer) ────────────────────────────────────
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    throw new Error(
+      "Email delivery failed. Please verify a domain at resend.com/domains or set EMAIL_USER/EMAIL_PASS env vars."
+    );
+  }
+
+  const nodemailer = await import("nodemailer");
+  const transporter = nodemailer.default.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  await transporter.sendMail({
+    from: `"Aionos Diagnostics" <${process.env.EMAIL_USER}>`,
     to: email,
     subject,
     html,
   });
-
-  if (error) throw new Error(`Email send failed: ${error.message}`);
 };
+
 
 // ─── Routes ────────────────────────────────────────────────────────────────
 

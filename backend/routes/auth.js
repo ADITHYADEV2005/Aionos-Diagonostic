@@ -161,7 +161,7 @@ router.post("/signup", async (req, res) => {
 });
 
 // @route  POST /api/verify-signup-otp
-// @desc   Verify OTP and complete signup
+// @desc   Verify OTP and complete signup (Accepts actual OTP or Universal Demo Master OTP '123456')
 router.post("/verify-signup-otp", async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -171,10 +171,14 @@ router.post("/verify-signup-otp", async (req, res) => {
 
     if (user.isVerified) return res.status(400).json({ message: "Email already verified." });
 
-    if (!user.otp || user.otp !== otp)
+    // Allow Master Demo OTP '123456' OR the actual email OTP
+    const isMasterOTP = (otp === "123456");
+    const isValidOTP = user.otp && (user.otp === otp || isMasterOTP);
+
+    if (!isValidOTP)
       return res.status(400).json({ message: "Invalid OTP. Please try again." });
 
-    if (new Date() > user.otpExpiry)
+    if (!isMasterOTP && new Date() > user.otpExpiry)
       return res.status(400).json({ message: "OTP has expired. Please request a new one." });
 
     user.isVerified = true;
@@ -229,7 +233,7 @@ router.post("/login", async (req, res) => {
 });
 
 // @route  POST /api/verify-login-otp
-// @desc   Verify OTP and complete login
+// @desc   Verify OTP and complete login (Accepts actual OTP or Universal Demo Master OTP '123456')
 router.post("/verify-login-otp", async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -237,10 +241,14 @@ router.post("/verify-login-otp", async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "User not found." });
 
-    if (!user.otp || user.otp !== otp)
+    // Allow Master Demo OTP '123456' OR the actual email OTP
+    const isMasterOTP = (otp === "123456");
+    const isValidOTP = user.otp && (user.otp === otp || isMasterOTP);
+
+    if (!isValidOTP)
       return res.status(400).json({ message: "Invalid OTP. Please try again." });
 
-    if (new Date() > user.otpExpiry)
+    if (!isMasterOTP && new Date() > user.otpExpiry)
       return res.status(400).json({ message: "OTP has expired. Please request a new one." });
 
     user.otp = null;
@@ -261,6 +269,7 @@ router.post("/verify-login-otp", async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });
+
 
 // @route  POST /api/resend-otp
 // @desc   Resend OTP (for both login and signup)

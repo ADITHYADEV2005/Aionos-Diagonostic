@@ -287,66 +287,24 @@ const UploadDetails = () => {
               {/* Target Organ Model */}
               <div>
                 <label style={labelStyle}>Target Organ Model</label>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
-                  {[
-                    { name: "Liver", active: true, tag: "Active" },
-                    { name: "Kidney", active: false, tag: "Beta" },
-                    { name: "Breast", active: false, tag: "Beta" },
-                  ].map((item) => (
-                    <button
-                      key={item.name}
-                      type="button"
-                      onClick={() => setOrgan(item.name)}
-                      style={{
-                        padding: "10px 4px",
-                        border: organ === item.name ? "2px solid #FF7B6B" : "1px solid #E8E3DE",
-                        borderRadius: "8px",
-                        backgroundColor: organ === item.name ? "#FFF5F3" : "#FAF7F2",
-                        color: organ === item.name ? "#FF7B6B" : "#2d3436",
-                        fontSize: "12px",
-                        fontWeight: "700",
-                        cursor: "pointer",
-                        textAlign: "center",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: "2px",
-                        boxShadow: "none",
-                      }}
-                    >
-                      <span>{item.name}</span>
-                      <span style={{ fontSize: "9px", color: organ === item.name ? "#FF7B6B" : "#999" }}>
-                        {item.tag}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Priority */}
-              <div>
-                <label style={labelStyle}>Scan Priority Level</label>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
-                  {["Routine", "Urgent", "Follow-up"].map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setPriority(p)}
-                      style={{
-                        padding: "8px 4px",
-                        border: priority === p ? "1px solid #2d3436" : "1px solid #E8E3DE",
-                        borderRadius: "8px",
-                        backgroundColor: priority === p ? "#2d3436" : "#ffffff",
-                        color: priority === p ? "#ffffff" : "#666666",
-                        fontSize: "12px",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        boxShadow: "none",
-                      }}
-                    >
-                      {p}
-                    </button>
-                  ))}
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    border: "2px solid #FF7B6B",
+                    borderRadius: "10px",
+                    backgroundColor: "#FFF5F3",
+                    color: "#FF7B6B",
+                    fontSize: "13px",
+                    fontWeight: "700",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <span>Liver (Hepatic Ultrasound Model)</span>
+                  <span style={{ fontSize: "11px", backgroundColor: "#FF7B6B", color: "#ffffff", padding: "2px 8px", borderRadius: "12px" }}>
+                    Active Model
+                  </span>
                 </div>
               </div>
 
@@ -365,6 +323,7 @@ const UploadDetails = () => {
               >
                 Submit & Run AI Pipeline →
               </button>
+
             </form>
           </div>
 

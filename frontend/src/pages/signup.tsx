@@ -29,19 +29,17 @@ const Signup = () => {
   const [resendCooldown, setResendCooldown] = useState(0);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Step 1: Submit form → backend creates user and sends OTP
+  // Submit form → backend creates user and returns JWT token
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(""); setSuccess("");
     if (!name || !email || !password) { setError("Please fill in all fields"); return; }
     if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
     setLoading(true);
-    setLoadingMsg("Sending OTP...");
+    setLoadingMsg("Creating Account...");
     const controller = new AbortController();
-    // 70s timeout — Render free tier cold starts take 30-50s
     const timeout = setTimeout(() => controller.abort(), 70000);
-    // After 6s show a friendlier message if still loading
-    const slowMsg = setTimeout(() => setLoadingMsg("Waking up server (first request takes ~30s)..."), 6000);
+    const slowMsg = setTimeout(() => setLoadingMsg("Waking up server (~30s)..."), 6000);
     try {
       const res = await fetch(`${AUTH_API_URL}/signup`, {
         method: "POST",
@@ -55,25 +53,28 @@ const Signup = () => {
       try { data = JSON.parse(text); } catch { throw new Error(`Bad response: ${text.slice(0, 100)}`); }
 
       if (res.ok) {
-        setStep("otp");
-        startCooldown();
+        setSuccess("Account created successfully! Redirecting...");
+        localStorage.setItem("user", JSON.stringify({ name: data.user?.name || name, email }));
+        if (data.token) localStorage.setItem("token", data.token);
+        setTimeout(() => navigate("/dashboard"), 1000);
       } else {
         setError(data.message || "Registration failed. Please try again.");
       }
     } catch (err: any) {
       clearTimeout(timeout); clearTimeout(slowMsg);
       if (err.name === "AbortError") {
-        setError("Still starting up after 70s. Please wait a moment and try again.");
+        setError("Server is waking up. Please wait a few seconds and click Create Account again.");
       } else {
         setError(AUTH_API_URL.includes("localhost")
           ? `Connection error: Set VITE_AUTH_API_URL in your hosting env to your live backend URL.`
-          : `Could not reach backend. Please wait 10 seconds and try again.`);
+          : `Could not reach backend. Please try again in a few seconds.`);
       }
     } finally {
       setLoading(false);
-      setLoadingMsg("Sending OTP...");
+      setLoadingMsg("Creating Account...");
     }
   };
+
 
   // Step 2: Submit OTP → backend verifies and creates account
   const handleVerifyOtp = async (e: React.FormEvent) => {

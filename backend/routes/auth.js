@@ -118,87 +118,44 @@ router.get("/health", (req, res) => {
 });
 
 // @route  POST /api/signup
-// @desc   Register user and send OTP to email
+// @desc   Direct standard user registration (No OTP required)
 router.post("/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password)
-      return res.status(400).json({ message: "Please provide all fields" });
+      return res.status(400).json({ message: "Please fill in all fields" });
 
     if (password.length < 6)
       return res.status(400).json({ message: "Password must be at least 6 characters" });
 
-    // Check if already verified
     const existing = await User.findOne({ email });
-    if (existing && existing.isVerified)
-      return res.status(400).json({ message: "Email already registered" });
+    if (existing)
+      return res.status(400).json({ message: "Email is already registered. Please sign in instead." });
 
-    const otp = generateOTP();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+    const user = await User.create({
+      name,
+      email,
+      password,
+      isVerified: true,
+    });
 
-    if (existing) {
-      // Update OTP for unverified user
-      existing.name = name;
-      existing.password = password;
-      existing.otp = otp;
-      existing.otpExpiry = otpExpiry;
-      await existing.save();
-    } else {
-      await User.create({ name, email, password, otp, otpExpiry, isVerified: false });
-    }
+    const token = generateToken(user._id);
 
-    await sendOTPEmail(email, otp, "signup");
-
-    res.status(200).json({ success: true, message: "OTP sent to your email" });
+    res.status(201).json({
+      success: true,
+      message: "Account created successfully",
+      token,
+      user: { id: user._id, name: user.name, email: user.email },
+    });
   } catch (error) {
     console.error("Signup error:", error);
     res.status(500).json({ message: "Server error during signup", error: error.message });
   }
 });
 
-// @route  POST /api/verify-signup-otp
-// @desc   Verify OTP and complete signup (Accepts actual OTP or Universal Demo Master OTP '123456')
-router.post("/verify-signup-otp", async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "User not found. Please sign up again." });
-
-    if (user.isVerified) return res.status(400).json({ message: "Email already verified." });
-
-    // Allow Master Demo OTP '123456' OR the actual email OTP
-    const isMasterOTP = (otp === "123456");
-    const isValidOTP = user.otp && (user.otp === otp || isMasterOTP);
-
-    if (!isValidOTP)
-      return res.status(400).json({ message: "Invalid OTP. Please try again." });
-
-    if (!isMasterOTP && new Date() > user.otpExpiry)
-      return res.status(400).json({ message: "OTP has expired. Please request a new one." });
-
-    user.isVerified = true;
-    user.otp = null;
-    user.otpExpiry = null;
-    await user.save();
-
-    const token = generateToken(user._id);
-
-    res.status(201).json({
-      success: true,
-      message: "Account verified successfully",
-      token,
-      user: { id: user._id, name: user.name, email: user.email },
-    });
-  } catch (error) {
-    console.error("Verify signup OTP error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-});
-
 // @route  POST /api/login
-// @desc   Validate credentials and send OTP
+// @desc   Direct standard user login (No OTP required)
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -207,51 +164,12 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Please provide email and password" });
 
     const user = await User.findOne({ email }).select("+password");
-    if (!user) return res.status(401).json({ message: "Invalid email or password" });
+    if (!user)
+      return res.status(401).json({ message: "Invalid email or password" });
 
     const isMatch = await user.matchPassword(password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid email or password" });
-
-    // Generate and send OTP
-    const otp = generateOTP();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-
-    user.otp = otp;
-    user.otpExpiry = otpExpiry;
-    await user.save();
-
-    await sendOTPEmail(email, otp, "login");
-
-    res.status(200).json({ success: true, message: "OTP sent to your email" });
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Server error during login", error: error.message });
-  }
-});
-
-// @route  POST /api/verify-login-otp
-// @desc   Verify OTP and complete login (Accepts actual OTP or Universal Demo Master OTP '123456')
-router.post("/verify-login-otp", async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "User not found." });
-
-    // Allow Master Demo OTP '123456' OR the actual email OTP
-    const isMasterOTP = (otp === "123456");
-    const isValidOTP = user.otp && (user.otp === otp || isMasterOTP);
-
-    if (!isValidOTP)
-      return res.status(400).json({ message: "Invalid OTP. Please try again." });
-
-    if (!isMasterOTP && new Date() > user.otpExpiry)
-      return res.status(400).json({ message: "OTP has expired. Please request a new one." });
-
-    user.otp = null;
-    user.otpExpiry = null;
-    user.isVerified = true;
-    await user.save();
+    if (!isMatch)
+      return res.status(401).json({ message: "Invalid email or password" });
 
     const token = generateToken(user._id);
 
@@ -262,10 +180,11 @@ router.post("/verify-login-otp", async (req, res) => {
       user: { id: user._id, name: user.name, email: user.email },
     });
   } catch (error) {
-    console.error("Verify login OTP error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error during login", error: error.message });
   }
 });
+
 
 
 // @route  POST /api/resend-otp

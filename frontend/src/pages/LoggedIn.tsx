@@ -27,15 +27,14 @@ const LoggedIn = () => {
   const [resendCooldown, setResendCooldown] = useState(0);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Step 1: Submit credentials → backend sends OTP
+  // Submit credentials → backend validates password and returns JWT token
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (!email || !password) { setError("Please enter both email and password"); return; }
     setLoading(true);
-    setLoadingMsg("Sending OTP...");
+    setLoadingMsg("Signing In...");
     const controller = new AbortController();
-    // 70s timeout — Render free tier cold starts take 30-50s
     const timeout = setTimeout(() => controller.abort(), 70000);
     const slowMsg = setTimeout(() => setLoadingMsg("Waking up server (~30s)..."), 6000);
     try {
@@ -51,25 +50,27 @@ const LoggedIn = () => {
       try { data = JSON.parse(text); } catch { throw new Error(`Bad response: ${text.slice(0, 100)}`); }
 
       if (res.ok) {
-        setStep("otp");
-        startCooldown();
+        localStorage.setItem("user", JSON.stringify({ name: data.user?.name || email.split("@")[0], email }));
+        if (data.token) localStorage.setItem("token", data.token);
+        navigate("/dashboard");
       } else {
         setError(data.message || "Invalid email or password");
       }
     } catch (err: any) {
       clearTimeout(timeout); clearTimeout(slowMsg);
       if (err.name === "AbortError") {
-        setError("Still starting up after 70s. Please wait a moment and try again.");
+        setError("Server is waking up. Please wait a few seconds and click Sign In again.");
       } else {
         setError(AUTH_API_URL.includes("localhost")
           ? `Connection error: Set VITE_AUTH_API_URL in your hosting env to your live backend URL.`
-          : `Could not reach backend. Please wait 10 seconds and try again.`);
+          : `Could not reach backend. Please try again in a few seconds.`);
       }
     } finally {
       setLoading(false);
-      setLoadingMsg("Sending OTP...");
+      setLoadingMsg("Signing In...");
     }
   };
+
 
   // Step 2: Submit OTP → backend verifies
   const handleVerifyOtp = async (e: React.FormEvent) => {
